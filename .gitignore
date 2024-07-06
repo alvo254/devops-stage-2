@@ -1,0 +1,8 @@
+.obsidian
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate.backup
+terraform.tfstate
+frontend/node_modules
+weaver.pem
+.terraform.tfstate.lock.info

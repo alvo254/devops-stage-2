@@ -1,10 +1,19 @@
-#! /usr/bin/env bash
+#!/bin/bash
 
-# Let the DB start
-python ./app/backend_pre_start.py
+# Activate Poetry environment
+source $(poetry env info --path)/bin/activate
 
-# Run migrations
-alembic upgrade head
+# Export PYTHONPATH to include the app directory
+export PYTHONPATH=/app
 
-# Create initial data in DB
-python ./app/initial_data.py
+# Run the backend pre-start script
+poetry run python /app/app/backend_pre_start.py
+
+# Run Alembic migrations
+poetry run alembic upgrade head
+
+# Run the initial data setup script
+poetry run python /app/app/initial_data.py
+
+# Start the FastAPI application
+poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000
