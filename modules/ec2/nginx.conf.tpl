@@ -4,15 +4,11 @@ events {
 
 http {
     upstream frontend {
-        server localhost:5173;
+        server frontend:5173;
     }
 
     upstream backend {
-        server ${backend_ip}:8000;
-    }
-
-    upstream backend_nginx {
-        server ${backend_ip}:8080;
+        server backend:8000;
     }
 
     server {
@@ -21,25 +17,38 @@ http {
 
         location / {
             proxy_pass http://frontend;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        location /api/ {
-            proxy_pass http://backend;
+        location /api {
+            proxy_pass http://backend/api;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
         }
 
-        location /adminer/ {
-            proxy_pass http://backend_nginx/adminer/;
+        location /docs {
+            proxy_pass http://backend/docs;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /redoc {
+            proxy_pass http://backend/redoc;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /adminer {
+            proxy_pass http://adminer:8080;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

@@ -19,3 +19,6 @@ To get started with this template, please follow the instructions in the respect
 - [Backend README](./backend/README.md)
 
 docker-compose exec nginx curl http://frontend:5173
+
+The newgrp docker command is causing the script to hang. This is because newgrp starts a new shell session, which doesn't return control to the script
+docker network ls
