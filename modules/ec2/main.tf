@@ -42,16 +42,68 @@ resource "null_resource" "nginx_config" {
 
   provisioner "file" {
     content = templatefile("${path.module}/nginx.conf.tpl", {
-      frontend_ip = aws_instance.frontend_ec2.public_ip
-      backend_ip  = aws_instance.backend_ec2.public_ip
+      backend_ip = aws_instance.backend_ec2.public_ip
     })
     destination = "/home/ubuntu/nginx.conf"
   }
 
   provisioner "remote-exec" {
     inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y nginx",
       "sudo cp /home/ubuntu/nginx.conf /etc/nginx/nginx.conf",
-       "sudo systemctl restart nginx"
+      "sudo systemctl restart nginx"
+    ]
+  }
+}
+resource "null_resource" "backend_setup" {
+  depends_on = [aws_instance.backend_ec2]
+
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = tls_private_key.RSA.private_key_pem
+    host        = aws_instance.backend_ec2.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y docker.io docker-compose git",
+      "sudo systemctl start docker",
+      "sudo systemctl enable docker",
+      "sudo usermod -aG docker ubuntu",
+      "git clone https://github.com/alvo254/devops-stage-2.git",
+      "cd devops-stage-2/backend",
+      "sudo docker network create app_network || true",
+      "sudo docker-compose up -d"
+    ]
+  }
+}
+
+resource "null_resource" "frontend_nginx_config" {
+  depends_on = [aws_instance.frontend_ec2, aws_instance.backend_ec2, null_resource.backend_setup]
+
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = tls_private_key.RSA.private_key_pem
+    host        = aws_instance.frontend_ec2.public_ip
+  }
+
+  provisioner "file" {
+    content = templatefile("${path.module}/nginx.conf.tpl", {
+      backend_ip = aws_instance.backend_ec2.public_ip
+    })
+    destination = "/home/ubuntu/nginx.conf"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'Updating Nginx configuration'",
+      "sudo cp /home/ubuntu/nginx.conf /etc/nginx/nginx.conf",
+      "sudo systemctl restart nginx",
+      "echo 'Nginx configuration updated and service restarted'",
     ]
   }
 }
@@ -70,6 +122,7 @@ resource "local_file" "weaver" {
   content = tls_private_key.RSA.private_key_openssh
   filename = "weaver.pem"
 }
+
 
 # resource "aws_instance" "frontend_ec2" {
 #   ami = "ami-04b70fa74e45c3917"
