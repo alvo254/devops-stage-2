@@ -4,18 +4,17 @@ events {
 
 http {
     upstream frontend {
-        server frontend:5173;
+        server ${frontend_ip}:5173;
     }
 
     upstream backend {
-        server backend:8000;  # Assuming your backend runs on port 8000
+        server ${backend_ip}:8000;
     }
 
     server {
         listen 80;
         server_name localhost;
 
-        # Frontend routing
         location / {
             proxy_pass http://frontend;
             proxy_set_header Host $host;
@@ -23,14 +22,12 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
 
-            # WebSocket support
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection "upgrade";
         }
 
-        # Backend routing
-        location /api/ {
+        location /api {
             proxy_pass http://backend;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;

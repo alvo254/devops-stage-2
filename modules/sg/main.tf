@@ -15,6 +15,19 @@ resource "aws_security_group" "webweaver" {
       ipv6_cidr_blocks = ["::/0"]
 
     },
+
+    {
+      description      = "HTTP"
+      from_port        = 80
+      to_port          = 80
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+      ipv6_cidr_blocks = ["::/0"]
+
+    },
     {
       description      = "HTTPS"
       from_port        = 443
