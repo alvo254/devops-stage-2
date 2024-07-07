@@ -47,7 +47,12 @@ resource "aws_route_table" "webweaver" {
   }
 }
 
-resource "aws_route_table_association" "webweaver" {
+resource "aws_route_table_association" "frontend" {
   route_table_id = aws_route_table.webweaver.id
-  subnet_id = aws_subnet.webweaver.id
+  subnet_id = aws_subnet.frontend.id
+}
+
+resource "aws_route_table_association" "backend" {
+  route_table_id = aws_route_table.webweaver.id
+  subnet_id = aws_subnet.backend.id
 }

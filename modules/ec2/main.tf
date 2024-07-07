@@ -1,7 +1,7 @@
 resource "aws_instance" "frontend_ec2" {
   ami = "ami-04b70fa74e45c3917"
   instance_type = "t2.micro"
-  subnet_id = var.subnet_id
+  subnet_id = var.frontend_subnet
   vpc_security_group_ids = [var.security_group]
   key_name = "${aws_key_pair.weaver.key_name}"
   user_data = data.template_file.user_data.rendered
@@ -17,15 +17,15 @@ resource "aws_instance" "frontend_ec2" {
 # resource "aws_instance" "backend_ec2" {
 #   ami = "ami-04b70fa74e45c3917"
 #   instance_type = "t2.micro"
-#   subnet_id = var.subnet_id
+#   subnet_id = var.backend_subnet
 #   vpc_security_group_ids = [var.security_group]
 #   key_name = "${aws_key_pair.weaver.key_name}"
-#   user_data = data.template_file.user_data.rendered
+#   user_data = data.template_file.backend.rendered
 #   associate_public_ip_address = true
 
 
 #   tags = {
-#     Name = "frontend_ec2"
+#     Name = "backend_ec2"
 #   }
 
 # }
@@ -48,9 +48,15 @@ resource "local_file" "weaver" {
 
 
 data "template_file" "user_data" {
-  template = file("${path.module}/backend.sh")
+  template = file("${path.module}/frontend.sh")
   #   vars = {
   #   domain_or_ip = aws_instance.webweaver_ec2.public_ip
   # }
 }
 
+data "template_file" "backend" {
+  template = file("${path.module}/backend.sh")
+  #   vars = {
+  #   domain_or_ip = aws_instance.webweaver_ec2.public_ip
+  # }
+}

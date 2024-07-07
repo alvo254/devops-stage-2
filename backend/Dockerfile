@@ -1,28 +1,19 @@
-FROM python:3.10-slim
+FROM python:3.9
 
-# Install Poetry
-RUN pip install --no-cache-dir poetry
-
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the pyproject.toml and poetry.lock files
-COPY pyproject.toml poetry.lock /app/
+# Install Poetry
+RUN pip install poetry
 
-# Install the dependencies
-RUN poetry install --no-root
+# Copy only requirements to cache them in docker layer
+COPY poetry.lock pyproject.toml /app/
 
-# Copy the rest of the application code
+# Project initialization:
+RUN poetry config virtualenvs.create false \
+  && poetry install --no-interaction --no-ansi
+
+# Copy project
 COPY . /app
 
-# Copy the start script
-COPY prestart.sh /app/prestart.sh
-
-# Give execution permission to the start script
-RUN chmod +x /app/prestart.sh
-
-# Make port 8000 available to the world outside this container
-EXPOSE 8000
-
-# Run the start script
-CMD ["/app/prestart.sh"]
+# Run the application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

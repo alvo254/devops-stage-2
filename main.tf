@@ -9,7 +9,7 @@ module "sg" {
 
 module "ec2" {
   source = "./modules/ec2"
-  subnet_id = module.vpc.public_subnet
+  frontend_subnet = module.vpc.frontend_subnet
   security_group = module.sg.security_group
-
+  backend_subnet = module.vpc.backend_subnet
 }

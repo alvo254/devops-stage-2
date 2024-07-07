@@ -1,4 +1,8 @@
-variable "subnet_id" {
+variable "frontend_subnet" {
+  type = string
+}
+
+variable "backend_subnet" {
   type = string
 }
 

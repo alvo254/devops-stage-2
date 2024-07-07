@@ -22,4 +22,7 @@ RUN npm install -g vite
 EXPOSE 5173
 
 # Start the app using Vite preview
-CMD ["vite", "preview", "--host", "0.0.0.0", "--port", "5173"]
+# CMD ["vite", "preview", "--host", "0.0.0.0", "--port", "5173"]
+
+
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173"]
