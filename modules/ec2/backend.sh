@@ -46,7 +46,12 @@ sudo systemctl restart postgresql
 # Clone the repository and build the Docker images
 git clone https://github.com/alvo254/devops-stage-2
 cd devops-stage-2/backend
+
+# Modify docker-compose.yml to use port 8080 instead of 80
+sudo sed -i 's/- "80:80"/- "8080:80"/' docker-compose.yml
+
 docker-compose up --build
 
 # Debugging query (commented out)
 # SELECT * FROM public.user;
+touch /home/ubuntu/setup_complete

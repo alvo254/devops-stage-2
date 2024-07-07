@@ -11,6 +11,10 @@ http {
         server ${backend_ip}:8000;
     }
 
+    upstream backend_nginx {
+        server ${backend_ip}:8080;
+    }
+
     server {
         listen 80;
         server_name localhost;
@@ -35,7 +39,7 @@ http {
         }
 
         location /adminer/ {
-            proxy_pass http://${backend_ip}:8080/;
+            proxy_pass http://backend_nginx/adminer/;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

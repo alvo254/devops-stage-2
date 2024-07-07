@@ -1,5 +1,9 @@
 #!/bin/bash
 
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+echo "Starting setup..."
+
 # Update and install dependencies
 sudo apt update -y
 sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
@@ -34,5 +38,18 @@ sudo apt install -y nginx
 git clone https://github.com/alvo254/devops-stage-2
 cd devops-stage-2/frontend
 
+# Create docker network
+sudo docker network create app_network || true
+
 # Start the application using Docker Compose
 docker-compose up -d
+
+sleep 2
+
+# Copy the Nginx configuration
+sudo docker cp /home/ubuntu/nginx.conf frontend_nginx_1:/etc/nginx/nginx.conf
+
+# Restart the Nginx container to apply changes
+sudo docker restart frontend_nginx_1
+
+touch /home/ubuntu/setup_complete

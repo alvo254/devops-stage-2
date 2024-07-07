@@ -1,6 +1,6 @@
 resource "aws_instance" "frontend_ec2" {
   ami                         = "ami-04b70fa74e45c3917"
-  instance_type               = "t2.micro"
+  instance_type               = "t3.medium"
   subnet_id                   = var.frontend_subnet
   vpc_security_group_ids      = [var.security_group]
   key_name                    = aws_key_pair.weaver.key_name
@@ -13,11 +13,23 @@ resource "aws_instance" "frontend_ec2" {
   tags = {
     Name = "frontend_ec2"
   }
+  provisioner "remote-exec" {
+    inline = [
+      "tail -f /var/log/cloud-init-output.log &"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = tls_private_key.RSA.private_key_pem
+      host        = self.public_ip
+    }
+  }
 }
 
 resource "aws_instance" "backend_ec2" {
   ami                         = "ami-04b70fa74e45c3917"
-  instance_type               = "t2.micro"
+  instance_type               = "t3.medium"
   subnet_id                   = var.backend_subnet
   vpc_security_group_ids      = [var.security_group]
   key_name                    = aws_key_pair.weaver.key_name
@@ -29,8 +41,7 @@ resource "aws_instance" "backend_ec2" {
     Name = "backend_ec2"
   }
 }
-
-resource "null_resource" "nginx_config" {
+resource "null_resource" "frontend_nginx_config" {
   depends_on = [aws_instance.frontend_ec2, aws_instance.backend_ec2]
 
   connection {
@@ -40,22 +51,66 @@ resource "null_resource" "nginx_config" {
     host        = aws_instance.frontend_ec2.public_ip
   }
 
+  provisioner "remote-exec" {
+    inline = [
+      "while [ ! -f /home/ubuntu/setup_complete ]; do sleep 2; done",
+      "sudo docker cp /home/ubuntu/nginx.conf frontend_nginx_1:/etc/nginx/nginx.conf",
+      "sudo docker restart frontend_nginx_1"
+    ]
+  }
+
   provisioner "file" {
     content = templatefile("${path.module}/nginx.conf.tpl", {
       backend_ip = aws_instance.backend_ec2.public_ip
     })
     destination = "/home/ubuntu/nginx.conf"
   }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get update",
-      "sudo apt-get install -y nginx",
-      "sudo cp /home/ubuntu/nginx.conf /etc/nginx/nginx.conf",
-      "sudo systemctl restart nginx"
-    ]
-  }
 }
+
+# resource "null_resource" "frontend_nginx_config" {
+#   depends_on = [aws_instance.frontend_ec2, aws_instance.backend_ec2]
+
+#   connection {
+#     type        = "ssh"
+#     user        = "ubuntu"
+#     private_key = tls_private_key.RSA.private_key_pem
+#     host        = aws_instance.frontend_ec2.public_ip
+#   }
+
+#   provisioner "remote-exec" {
+#     inline = [
+#       "while [ ! -f /home/ubuntu/setup_complete ]; do sleep 10; done",
+#       "sudo docker cp /home/ubuntu/nginx.conf frontend_nginx_1:/etc/nginx/nginx.conf",
+#       "sudo docker restart frontend_nginx_1"
+#     ]
+#   }
+
+#   provisioner "file" {
+#     content = templatefile("${path.module}/nginx.conf.tpl", {
+#       backend_ip = aws_instance.backend_ec2.public_ip
+#     })
+#     destination = "/home/ubuntu/nginx.conf"
+#   }
+# }
+
+# resource "null_resource" "backend_setup" {
+#   depends_on = [aws_instance.backend_ec2]
+
+#   connection {
+#     type        = "ssh"
+#     user        = "ubuntu"
+#     private_key = tls_private_key.RSA.private_key_pem
+#     host        = aws_instance.backend_ec2.public_ip
+#   }
+
+#   provisioner "remote-exec" {
+#     inline = [
+#       "while [ ! -f /home/ubuntu/setup_complete ]; do sleep 10; done",
+#       "echo 'Backend setup complete'"
+#     ]
+#   }
+# }
+
 resource "null_resource" "backend_setup" {
   depends_on = [aws_instance.backend_ec2]
 
@@ -76,37 +131,44 @@ resource "null_resource" "backend_setup" {
       "git clone https://github.com/alvo254/devops-stage-2.git",
       "cd devops-stage-2/backend",
       "sudo docker network create app_network || true",
+      "sudo sed -i 's/- \"80:80\"/- \"8080:80\"/' docker-compose.yml",
       "sudo docker-compose up -d"
     ]
   }
-}
-
-resource "null_resource" "frontend_nginx_config" {
-  depends_on = [aws_instance.frontend_ec2, aws_instance.backend_ec2, null_resource.backend_setup]
-
-  connection {
-    type        = "ssh"
-    user        = "ubuntu"
-    private_key = tls_private_key.RSA.private_key_pem
-    host        = aws_instance.frontend_ec2.public_ip
-  }
-
-  provisioner "file" {
-    content = templatefile("${path.module}/nginx.conf.tpl", {
-      backend_ip = aws_instance.backend_ec2.public_ip
-    })
-    destination = "/home/ubuntu/nginx.conf"
-  }
-
   provisioner "remote-exec" {
     inline = [
-      "echo 'Updating Nginx configuration'",
-      "sudo cp /home/ubuntu/nginx.conf /etc/nginx/nginx.conf",
-      "sudo systemctl restart nginx",
-      "echo 'Nginx configuration updated and service restarted'",
+      "while [ ! -f /home/ubuntu/setup_complete ]; do sleep 2; done",
+      "echo 'Backend setup complete'"
     ]
   }
 }
+
+# resource "null_resource" "frontend_nginx_config" {
+#   depends_on = [aws_instance.frontend_ec2, aws_instance.backend_ec2, null_resource.backend_setup]
+
+#   connection {
+#     type        = "ssh"
+#     user        = "ubuntu"
+#     private_key = tls_private_key.RSA.private_key_pem
+#     host        = aws_instance.frontend_ec2.public_ip
+#   }
+
+#   provisioner "file" {
+#     content = templatefile("${path.module}/nginx.conf.tpl", {
+#       backend_ip = aws_instance.backend_ec2.public_ip
+#     })
+#     destination = "/home/ubuntu/nginx.conf"
+#   }
+
+#   provisioner "remote-exec" {
+#     inline = [
+#       "echo 'Updating Nginx configuration'",
+#       "sudo cp /home/ubuntu/nginx.conf /etc/nginx/nginx.conf",
+#       "sudo systemctl restart nginx",
+#       "echo 'Nginx configuration updated and service restarted'",
+#     ]
+#   }
+# }
 
 resource "tls_private_key" "RSA" {
   algorithm = "RSA"
