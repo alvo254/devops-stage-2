@@ -24,5 +24,5 @@ services:
 
 networks:
   default:
-    name: frontend_network
+    name: app_network
     driver: bridge
