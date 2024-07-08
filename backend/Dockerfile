@@ -6,6 +6,9 @@ WORKDIR /app
 # Install Poetry
 RUN pip install poetry
 
+# Install PostgreSQL client
+RUN apt-get update && apt-get install -y postgresql-client
+
 # Copy only requirements to cache them in docker layer
 COPY poetry.lock pyproject.toml /app/
 
