@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:alpine
     ports:
       - "80:80"
       - "443:443"
@@ -13,9 +13,12 @@ services:
       - adminer
     networks:
       - app_network
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
 
   backend:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     environment:
@@ -32,9 +35,12 @@ services:
       retries: 5
     networks:
       - app_network
+    tmpfs:
+      - /tmp
+      - /var/tmp
 
   db:
-    image: postgres:13
+    image: postgres:13-alpine
     environment:
       POSTGRES_USER: ubuntu
       POSTGRES_PASSWORD: twende@1357
@@ -49,15 +55,20 @@ services:
       retries: 5
     networks:
       - app_network
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
 
   adminer:
-    image: adminer
+    image: adminer:4-alpine
     ports:
       - "8080:8080"
     depends_on:
       - db
     networks:
       - app_network
+    tmpfs:
+      - /tmp
 
 volumes:
   postgres_data:
@@ -65,59 +76,3 @@ volumes:
 networks:
   app_network:
     external: true
-
-# version: '3.8'
-
-# services:
-#   nginx:
-#     image: nginx:latest
-#     ports:
-#       - "80:80"
-#       - "443:443"
-#     volumes:
-#       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-#     depends_on:
-#       - backend
-#       - adminer
-
-#   backend:
-#     build: 
-#       context: .
-#       dockerfile: Dockerfile
-#     environment:
-#       - DATABASE_URL=postgresql://ubuntu:twende@1357@db/fast_api
-#     expose:
-#       - "8000"
-#     depends_on:
-#       db:
-#         condition: service_healthy
-
-#   db:
-#     image: postgres:13
-#     environment:
-#       POSTGRES_USER: ubuntu
-#       POSTGRES_PASSWORD: twende@1357
-#       POSTGRES_DB: fast_api
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#       - ./setup.sh:/docker-entrypoint-initdb.d/setup.sh
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U ubuntu"]
-#       interval: 5s
-#       timeout: 5s
-#       retries: 5
-
-#   adminer:
-#     image: adminer
-#     expose:
-#       - "8080"
-#     depends_on:
-#       - db
-
-# volumes:
-#   postgres_data:
-
-# networks:
-#   default:
-#     name: app_network
-#     external: true
