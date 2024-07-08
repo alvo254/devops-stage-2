@@ -32,6 +32,7 @@ services:
       POSTGRES_DB: fast_api
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./setup.sh:/docker-entrypoint-initdb.d/setup.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ubuntu"]
       interval: 5s
