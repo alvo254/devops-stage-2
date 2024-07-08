@@ -60,7 +60,7 @@ services:
       - /var/run/postgresql
 
   adminer:
-    image: adminer:4-alpine
+    image: adminer:latest
     ports:
       - "8080:8080"
     depends_on:
