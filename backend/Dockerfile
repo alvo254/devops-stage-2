@@ -15,5 +15,8 @@ RUN poetry config virtualenvs.create false \
 # Copy project
 COPY . /app
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Make the script executable
+RUN chmod +x /app/prestart.sh
+
+# Run prestart.sh and then start the application
+CMD ["/bin/bash", "-c", "/app/prestart.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

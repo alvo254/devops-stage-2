@@ -21,7 +21,8 @@ services:
     expose:
       - "8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:13
@@ -31,6 +32,11 @@ services:
       POSTGRES_DB: fast_api
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ubuntu"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   adminer:
     image: adminer
