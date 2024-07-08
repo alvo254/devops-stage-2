@@ -6,6 +6,12 @@ resource "aws_instance" "consolidated_ec2" {
   key_name                    = aws_key_pair.weaver.key_name
   associate_public_ip_address = true
 
+  root_block_device {
+    volume_type = "gp3"
+    volume_size = 80 # Custom size, e.g., 20 GB
+    delete_on_termination = true
+  }
+
   tags = {
     Name = "consolidated_ec2"
   }
