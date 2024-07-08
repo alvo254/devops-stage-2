@@ -54,7 +54,7 @@ resource "null_resource" "frontend_nginx_config" {
 
   provisioner "file" {
     content = templatefile("${path.module}/nginx.conf.tpl", {
-      backend_ip = aws_instance.backend_ec2.private_ip
+      backend_ip = aws_instance.backend_ec2.public_ip
     })
     destination = "/home/ubuntu/nginx.conf"
   }
