@@ -16,6 +16,18 @@ resource "aws_security_group" "webweaver" {
 
     },
     {
+      description      = "custom"
+      from_port        = 8000
+      to_port          = 8000
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+      ipv6_cidr_blocks = ["::/0"]
+
+    },
+    {
       description      = "PSQL"
       from_port        = 5173
       to_port          = 5173
