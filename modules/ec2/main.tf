@@ -39,15 +39,15 @@ resource "null_resource" "setup_consolidated_instance" {
     ]
   }
 
-  provisioner "remote-exec" {
-    inline = [
-      "cd ~/devops-stage-2/backend",
-      "docker-compose up -d",
-      "sleep 30",  # Give containers time to start up
-      "docker-compose logs > docker_logs.txt",
-      "cat docker_logs.txt"
-    ]
-  }
+  # provisioner "remote-exec" {
+  #   inline = [
+  #     "cd ~/devops-stage-2/backend",
+  #     "docker-compose up -d",
+  #     "sleep 30",  # Give containers time to start up
+  #     "docker-compose logs > docker_logs.txt",
+  #     "cat docker_logs.txt"
+  #   ]
+  # }
 }
 
 resource "tls_private_key" "RSA" {
