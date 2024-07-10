@@ -44,7 +44,7 @@ services:
     environment:
       POSTGRES_USER: ubuntu
       POSTGRES_PASSWORD: twende@1357
-      POSTGRES_DB: fast_api
+      POSTGRES_DB: ubuntu
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./setup.sh:/docker-entrypoint-initdb.d/setup.sh
