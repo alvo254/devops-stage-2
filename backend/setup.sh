@@ -34,4 +34,4 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT CREATE ON SCHEMA public TO ubuntu;
 EOSQL
 
-echo "Database setup completed successfully."
+echo "Database **setup** completed successfully."
