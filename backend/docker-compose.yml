@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://ubuntu:twende@1357@db/fast_api
+      - DATABASE_URL=postgresql://ubuntu:twende@1357@db/ubuntu
     expose:
       - "8000"
     depends_on:
