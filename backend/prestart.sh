@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Activate Poetry environment
-source $(poetry env info --path)/bin/activate
-
 # Export PYTHONPATH to include the app directory
 export PYTHONPATH=/app
 
