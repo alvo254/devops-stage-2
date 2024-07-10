@@ -42,3 +42,21 @@ Add Poetry to your PATH (if not automatically added):
 
 5. **Update configuration**:
    Ensure you update the necessary configurations in the `.env` file, particularly the database configuration.
+
+### Docker Compose
+
+The `docker-compose.yml` file defines the following services:
+
+- nginx: Reverse proxy
+- backend: Main application service
+- db: PostgreSQL database
+- adminer: Database management tool
+
+### Dockerfile
+
+The Dockerfile for the backend service:
+
+- Uses Python 3.9 as the base image
+- Installs project dependencies
+- Copies application files
+- Sets up the wait-for-it script for database connection handling

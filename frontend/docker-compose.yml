@@ -1,28 +1,78 @@
 version: '3.8'
 
 services:
-  frontend_nginx:
-    image: nginx:latest
+  nginx:
+    image: nginx:alpine
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - frontend
+      - backend
+      - adminer
+    networks:
+      - app_network
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
 
-  frontend:
-    build: .
-    command: sh -c "npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
-    volumes:
-      - ./src:/app/src
-      - ./public:/app/public
-    container_name: frontend
-    ports:
-      - "5173:5173"
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
-      - NODE_ENV=production
+      - DATABASE_URL=postgresql://ubuntu:twende@1357@db/fast_api
+    expose:
+      - "8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || (echo 'Backend health check failed' && exit 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - app_network
+    tmpfs:
+      - /tmp
+      - /var/tmp
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: ubuntu
+      POSTGRES_PASSWORD: twende@1357
+      POSTGRES_DB: fast_api
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./setup.sh:/docker-entrypoint-initdb.d/setup.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ubuntu"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+
+  adminer:
+    image: adminer:latest
+    ports:
+      - "8081:8080"
+    depends_on:
+      - db
+    networks:
+      - app_network
+    tmpfs:
+      - /tmp
+
+volumes:
+  postgres_data:
 
 networks:
-  default:
-    name: app_network
-    driver: bridge
+  app_network:
+    external: true
