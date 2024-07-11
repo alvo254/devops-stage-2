@@ -14,8 +14,7 @@ COPY poetry.lock pyproject.toml /app/
 
 #Project initialization:
 RUN poetry config virtualenvs.create true \
-  && poetry install --no-interaction --no-ansi \
-  && poetry add alembic
+  && poetry install --no-interaction --no-ansi 
 
 # Copy project
 COPY . /app
