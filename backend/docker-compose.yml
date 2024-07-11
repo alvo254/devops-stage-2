@@ -50,7 +50,6 @@ services:
       POSTGRES_DB: ubuntu
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      #- ./setup.sh:/docker-entrypoint-initdb.d/setup.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ubuntu"]
       interval: 5s
@@ -74,11 +73,11 @@ services:
     tmpfs:
       - /tmp
     healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:8080"]
-    interval: 30s
-    timeout: 10s
-    retries: 3
-    start_period: 30s
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
 volumes:
   postgres_data:
