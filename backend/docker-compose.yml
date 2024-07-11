@@ -1,54 +1,6 @@
 version: '3.8'
 
 services:
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      backend:
-        condition: service_healthy
-      adminer:
-        condition: service_started
-    networks:
-      - app_network
-    tmpfs:
-      - /var/cache/nginx
-      - /var/run
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
-
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      - DATABASE_URL=postgresql://ubuntu:twende%401357@db:5432/ubuntu
-    expose:
-      - "8000"
-    depends_on:
-      db:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    networks:
-      - app_network
-    tmpfs:
-      - /tmp
-      - /var/tmp
-
   db:
     image: postgres:13-alpine
     environment:
@@ -62,33 +14,43 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - app_network
-    tmpfs:
-      - /tmp
-      - /var/run/postgresql
 
+  backend:
+    build: .
+    environment:
+      - POSTGRES_USER=ubuntu
+      - POSTGRES_PASSWORD=twende@1357
+      - POSTGRES_SERVER=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=ubuntu
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+    
   adminer:
     image: adminer:latest
     ports:
       - "8081:8080"
     depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - app_network
-    tmpfs:
-      - /tmp
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      - db
 
 volumes:
   postgres_data:
 
 networks:
-  app_network:
-    external: true
+  default:
+    name: app_network

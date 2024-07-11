@@ -34,9 +34,9 @@ print(f"POSTGRES_DB: {os.getenv('POSTGRES_DB')}")
 def get_url():
     user = os.getenv("POSTGRES_USER", "ubuntu")
     password = quote_plus(os.getenv("POSTGRES_PASSWORD", "twende@1357"))
-    server = os.getenv("POSTGRES_SERVER", "34.228.146.120")
+    server = os.getenv("POSTGRES_SERVER", "db")
     port = os.getenv("POSTGRES_PORT", "5432")
-    db = os.getenv("POSTGRES_DB", "fast_api")
+    db = os.getenv("POSTGRES_DB", "ubuntu")
 
     return f"postgresql+psycopg://{user}:{password}@{server}:{port}/{db}"
 

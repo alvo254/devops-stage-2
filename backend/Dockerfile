@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y postgresql-client netcat-openbsd
 COPY poetry.lock pyproject.toml /app/
 
 # Project initialization:
-RUN poetry config virtualenvs.create false \
+RUN poetry config virtualenvs.create true \
   && poetry install --no-interaction --no-ansi
 
 # Copy project
@@ -32,4 +32,5 @@ echo "Database is ready!"\n\
 exec "$@"' > /app/wait.sh && chmod +x /app/wait.sh
 
 # Use the new script to wait for the database, then run prestart.sh and start the application
-CMD ["/bin/bash", "-c", "/app/wait.sh /app/prestart.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# Set the PYTHONPATH and start the application
+CMD ["/bin/bash", "-c", "export PYTHONPATH=/app && /app/wait.sh /app/prestart.sh && poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000"]
