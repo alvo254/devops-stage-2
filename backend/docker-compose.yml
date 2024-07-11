@@ -54,6 +54,7 @@ services:
 volumes:
   postgres_data:
 
+
 networks:
-  default:
-    name: app_network
+  app_network:
+    external: true
