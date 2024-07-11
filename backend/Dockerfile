@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y postgresql-client netcat-openbsd
 # Copy only requirements to cache them in docker layer
 COPY poetry.lock pyproject.toml /app/
 
-# Project initialization:
-  # RUN poetry config virtualenvs.create true \
-  # && poetry install --no-interaction --no-ansi \
-  # && poetry add alembic
+#Project initialization:
+RUN poetry config virtualenvs.create true \
+  && poetry install --no-interaction --no-ansi \
+  && poetry add alembic
 
 # Copy project
 COPY . /app
