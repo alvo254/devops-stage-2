@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://ubuntu:twende@1357@db/ubuntu
+      - DATABASE_URL=postgresql://ubuntu:twende%401357@db:5432/ubuntu
     expose:
       - "8000"
     depends_on:
@@ -50,7 +50,7 @@ services:
       POSTGRES_DB: ubuntu
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./setup.sh:/docker-entrypoint-initdb.d/setup.sh
+      #- ./setup.sh:/docker-entrypoint-initdb.d/setup.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ubuntu"]
       interval: 5s
@@ -73,6 +73,12 @@ services:
       - app_network
     tmpfs:
       - /tmp
+    healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:8080"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 30s
 
 volumes:
   postgres_data:

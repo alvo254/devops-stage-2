@@ -3,7 +3,7 @@ set -e
 
 echo "Starting database setup..."
 
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+psql -v ON_ERROR_STOP=0 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     -- Create the ubuntu user if it doesn't exist
     DO
     \$do\$
@@ -17,7 +17,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     \$do\$;
 
     -- Create the ubuntu database if it doesn't exist
-    CREATE DATABASE ubuntu;
+    SELECT 'CREATE DATABASE ubuntu'
+    WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'ubuntu')\gexec
 
     -- Grant privileges to the ubuntu user on the ubuntu database
     GRANT ALL PRIVILEGES ON DATABASE ubuntu TO ubuntu;
@@ -34,4 +35,4 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     GRANT CREATE ON SCHEMA public TO ubuntu;
 EOSQL
 
-echo "Database **setup** completed successfully."
+echo "Database setup completed successfully."

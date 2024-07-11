@@ -60,3 +60,7 @@ The Dockerfile for the backend service:
 - Installs project dependencies
 - Copies application files
 - Sets up the wait-for-it script for database connection handling
+
+
+Now, let's try to connect to the database using psql from the backend container
+docker-compose exec backend psql -h db -U ubuntu -d ubuntu -c "SELECT 1"
