@@ -7,7 +7,7 @@ WORKDIR /app
 RUN pip install poetry
 
 # Install PostgreSQL client
-RUN apt-get update && apt-get install -y postgresql-client
+RUN apt-get update && apt-get install -y postgresql-client netcat-openbsd
 
 # Copy only requirements to cache them in docker layer
 COPY poetry.lock pyproject.toml /app/
@@ -22,5 +22,14 @@ COPY . /app
 # Make the script executable
 RUN chmod +x /app/prestart.sh
 
-# Run prestart.sh and then start the application
-CMD ["/bin/bash", "-c", "/app/prestart.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# Create a new script to wait for the database
+RUN echo '#!/bin/bash\n\
+echo "Waiting for database..."\n\
+while ! nc -z db 5432; do\n\
+  sleep 1\n\
+done\n\
+echo "Database is ready!"\n\
+exec "$@"' > /app/wait.sh && chmod +x /app/wait-for-db.sh
+
+# Use the new script to wait for the database, then run prestart.sh and start the application
+CMD ["/bin/bash", "-c", "/app/wait.sh /app/prestart.sh && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
